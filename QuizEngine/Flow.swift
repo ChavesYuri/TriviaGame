@@ -64,7 +64,7 @@ public final class Flow {
         } else if let questionIndex = questions.firstIndex(of: question), (questionIndex + 1) < questions.count, let firstPlayer = players.first {
             // If is the last Player and there's more questions
             let nextQuestion = questions[questionIndex + 1]
-            startGame(with: nextQuestion, player: firstPlayer)
+            routeToQuestion(nextQuestion, player: firstPlayer)
         } else {
             router.routeToGameResult()
         }

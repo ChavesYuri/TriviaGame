@@ -82,6 +82,36 @@ final class FlowTest: XCTestCase {
         XCTAssertEqual(routerSpy.gameResultCallCount, 1)
     }
     
+    func test_startAndFirstPlayerStartsAndAnswersQuestionAndCompletesQuestionResult_withTwoQuestionAndOnePlayer_routesToNextQuestionWithFirstPlayer() {
+        let players: [Player] = [.init(name: "a player")]
+        let (sut, routerSpy) = makeSUT(questions: ["Q1", "Q2"], players: players)
+        
+        sut.start()
+        routerSpy.playerTurnRequests[0].onStart()
+        routerSpy.questionsRequests[0].answer("A answer")
+        routerSpy.questionResultRequests[0]()
+        
+        XCTAssertEqual(routerSpy.questionsRequests.count, 2)
+        XCTAssertEqual(routerSpy.questionsRequests[0].question, "Q1")
+        XCTAssertEqual(routerSpy.questionsRequests[1].question, "Q2")
+    }
+    
+    func test_startAndFirstPlayerStartsAndAnswersQuestionAndCompletesQuestionResult_withOneQuestionAndTwoPlayers_routesToNextPlayerTurnWithSecondPlayer() {
+        let players: [Player] = [.init(name: "a player"), .init(name: "Another Player")]
+        let (sut, routerSpy) = makeSUT(questions: ["Q1"], players: players)
+        
+        sut.start()
+        routerSpy.playerTurnRequests[0].onStart()
+        routerSpy.questionsRequests[0].answer("A answer")
+        routerSpy.questionResultRequests[0]()
+        
+        XCTAssertEqual(routerSpy.questionsRequests.count, 1)
+        XCTAssertEqual(routerSpy.questionsRequests[0].question, "Q1")
+        XCTAssertEqual(routerSpy.playerTurnRequests.count, 2)
+        XCTAssertEqual(routerSpy.playerTurnRequests[0].player, players[0])
+        XCTAssertEqual(routerSpy.playerTurnRequests[1].player, players[1])
+    }
+    
     // MARK: Helpers
     
     private func makeSUT(
