@@ -8,9 +8,9 @@ final class FlowTest: XCTestCase {
         
         sut.start()
         
-        XCTAssertTrue(routerSpy.routedQuestionsRequests.isEmpty)
-        XCTAssertTrue(routerSpy.routedQuestionsRequests.isEmpty)
-        XCTAssertEqual(routerSpy.routedToGameResultCallCount, 1)
+        XCTAssertTrue(routerSpy.questionsRequests.isEmpty)
+        XCTAssertTrue(routerSpy.questionsRequests.isEmpty)
+        XCTAssertEqual(routerSpy.gameResultCallCount, 1)
     }
     
     func test_start_withOneQuestionAndNoPlayers_routesToGameResult() {
@@ -18,9 +18,9 @@ final class FlowTest: XCTestCase {
         
         sut.start()
         
-        XCTAssertTrue(routerSpy.routedQuestionsRequests.isEmpty)
-        XCTAssertTrue(routerSpy.routedQuestionsRequests.isEmpty)
-        XCTAssertEqual(routerSpy.routedToGameResultCallCount, 1)
+        XCTAssertTrue(routerSpy.questionsRequests.isEmpty)
+        XCTAssertTrue(routerSpy.questionsRequests.isEmpty)
+        XCTAssertEqual(routerSpy.gameResultCallCount, 1)
     }
     
     func test_start_withNoQuestionAndNoPlayers_routesToGameResult() {
@@ -28,9 +28,9 @@ final class FlowTest: XCTestCase {
         
         sut.start()
         
-        XCTAssertTrue(routerSpy.routedQuestionsRequests.isEmpty)
-        XCTAssertTrue(routerSpy.routedQuestionsRequests.isEmpty)
-        XCTAssertEqual(routerSpy.routedToGameResultCallCount, 1)
+        XCTAssertTrue(routerSpy.questionsRequests.isEmpty)
+        XCTAssertTrue(routerSpy.questionsRequests.isEmpty)
+        XCTAssertEqual(routerSpy.gameResultCallCount, 1)
     }
     
     func test_start_withOneQuestionAndOnePlayer_routesToFirstPlayerTurn() {
@@ -39,9 +39,9 @@ final class FlowTest: XCTestCase {
         
         sut.start()
         
-        XCTAssertEqual(routerSpy.routedToPlayerTurnRequests[0].player, players[0])
-        XCTAssertEqual(routerSpy.routedToGameResultCallCount, 0)
-        XCTAssertTrue(routerSpy.routedQuestionsRequests.isEmpty)
+        XCTAssertEqual(routerSpy.playerTurnRequests[0].player, players[0])
+        XCTAssertEqual(routerSpy.gameResultCallCount, 0)
+        XCTAssertTrue(routerSpy.questionsRequests.isEmpty)
     }
     
     func test_startAndFirstPlayerInitiatesGame_withOneQuestionAndOnePlayer_routesToFirstQuestion() {
@@ -49,12 +49,12 @@ final class FlowTest: XCTestCase {
         let (sut, routerSpy) = makeSUT(questions: ["Q1"], players: players)
         
         sut.start()
-        routerSpy.routedToPlayerTurnRequests[0].onStart()
+        routerSpy.playerTurnRequests[0].onStart()
         
-        XCTAssertEqual(routerSpy.routedToPlayerTurnRequests[0].player, players[0])
-        XCTAssertEqual(routerSpy.routedToGameResultCallCount, 0)
-        XCTAssertEqual(routerSpy.routedQuestionsRequests.count, 1)
-        XCTAssertEqual(routerSpy.routedQuestionsRequests.first?.question, "Q1")
+        XCTAssertEqual(routerSpy.playerTurnRequests[0].player, players[0])
+        XCTAssertEqual(routerSpy.gameResultCallCount, 0)
+        XCTAssertEqual(routerSpy.questionsRequests.count, 1)
+        XCTAssertEqual(routerSpy.questionsRequests.first?.question, "Q1")
     }
     
     func test_startAndFirstPlayerInitiatesGameAndAnswersFirstQuestion_withOneQuestionAndOnePlayer_routesToQuestionResult() {
@@ -62,11 +62,11 @@ final class FlowTest: XCTestCase {
         let (sut, routerSpy) = makeSUT(questions: ["Q1"], players: players)
         
         sut.start()
-        routerSpy.routedToPlayerTurnRequests[0].onStart()
-        routerSpy.routedQuestionsRequests[0].answer("A answer")
+        routerSpy.playerTurnRequests[0].onStart()
+        routerSpy.questionsRequests[0].answer("A answer")
         
-        XCTAssertEqual(routerSpy.routedQuestionsRequests.count, 1)
-        XCTAssertEqual(routerSpy.routedQuestionsRequests.first?.question, "Q1")
+        XCTAssertEqual(routerSpy.questionsRequests.count, 1)
+        XCTAssertEqual(routerSpy.questionsRequests.first?.question, "Q1")
         XCTAssertEqual(routerSpy.questionResultRequests.count, 1)
     }
     
@@ -75,11 +75,11 @@ final class FlowTest: XCTestCase {
         let (sut, routerSpy) = makeSUT(questions: ["Q1"], players: players)
         
         sut.start()
-        routerSpy.routedToPlayerTurnRequests[0].onStart()
-        routerSpy.routedQuestionsRequests[0].answer("A answer")
+        routerSpy.playerTurnRequests[0].onStart()
+        routerSpy.questionsRequests[0].answer("A answer")
         routerSpy.questionResultRequests[0]()
         
-        XCTAssertEqual(routerSpy.routedToGameResultCallCount, 1)
+        XCTAssertEqual(routerSpy.gameResultCallCount, 1)
     }
     
     // MARK: Helpers
@@ -95,16 +95,16 @@ final class FlowTest: XCTestCase {
     }
     
     final class RouterSpy: Router {
-        var routedToGameResultCallCount = 0
-        var routedQuestionsRequests: [(question: Question, answer: Answer)] = []
-        var routedToPlayerTurnRequests: [(player: Player, onStart: () -> Void)] = []
+        private(set) var playerTurnRequests: [(player: Player, onStart: () -> Void)] = []
         
         func routeToPlayerTurn(player: Player, _ onStart: @escaping () -> Void) {
-            routedToPlayerTurnRequests.append((player, onStart))
+            playerTurnRequests.append((player, onStart))
         }
         
+        private(set) var questionsRequests: [(question: Question, answer: Answer)] = []
+        
         func routeToQuestionScreen(_ question: Question, _ answer: @escaping Answer) {
-            routedQuestionsRequests.append((question, answer))
+            questionsRequests.append((question, answer))
         }
         
         private(set) var questionResultRequests: [() -> Void] = []
@@ -113,8 +113,10 @@ final class FlowTest: XCTestCase {
             questionResultRequests.append(completion)
         }
         
+        private(set) var gameResultCallCount = 0
+        
         func routeToGameResult() {
-            routedToGameResultCallCount += 1
+            gameResultCallCount += 1
         }
     }
     
