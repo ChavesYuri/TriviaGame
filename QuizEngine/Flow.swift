@@ -6,6 +6,7 @@ public protocol Router {
     func routeToPlayerTurn(player: Player, _ onStart: @escaping () -> Void)
     func routeToQuestionScreen(_ question: Question, _ answer: @escaping Answer)
     func routeToQuestionResult(completion: @escaping () -> Void)
+    func routeToRoundResult(completion: @escaping () -> Void)
     func routeToGameResult()
 }
 
@@ -52,21 +53,27 @@ public final class Flow {
     
     private func routeToQuestionResult(question: Router.Question, player: Player, answer: String) {
         self.router.routeToQuestionResult {
-            self.nextPlayerOrQuestion(from: question, player: player)
+            self.nextPlayerOrRoundResult(from: question, player: player)
         }
     }
     
-    private func nextPlayerOrQuestion(from question: Router.Question, player: Player) {
+    private func nextPlayerOrRoundResult(from question: Router.Question, player: Player) {
         if let playerIndex = players.firstIndex(of: player), (playerIndex + 1) < players.count {
             // If there's more players to answer the same question
             let nextPlayer = players[playerIndex + 1]
             startGame(with: question, player: nextPlayer)
-        } else if let questionIndex = questions.firstIndex(of: question), (questionIndex + 1) < questions.count, let firstPlayer = players.first {
+        } else {
+            router.routeToRoundResult {
+                self.nextQuestionOrGameResult(question: question, player: player)
+            }
+        }
+    }
+    
+    private func nextQuestionOrGameResult(question: Router.Question, player: Player) {
+        if let questionIndex = questions.firstIndex(of: question), (questionIndex + 1) < questions.count, let firstPlayer = players.first {
             // If is the last Player and there's more questions
             let nextQuestion = questions[questionIndex + 1]
             routeToQuestion(nextQuestion, player: firstPlayer)
-        } else {
-            router.routeToGameResult()
         }
     }
 }
