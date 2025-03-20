@@ -5,7 +5,7 @@ public protocol Router {
     typealias Answer = (String) -> Void
     func routeToPlayerTurn(player: Player, _ onStart: @escaping () -> Void)
     func routeToQuestionScreen(_ question: Question, _ answer: @escaping Answer)
-    func routeToQuestionResult()
+    func routeToQuestionResult(completion: @escaping () -> Void)
     func routeToGameResult()
 }
 
@@ -32,15 +32,41 @@ public final class Flow {
     
     public func start() {
         if let firstQuestion = questions.first, let firstPlayer = players.first {
-            router.routeToPlayerTurn(player: firstPlayer, { [weak self] in
-                self?.routeToQuestion(firstQuestion, player: firstPlayer)
-            })
+            startGame(with: firstQuestion, player: firstPlayer)
         } else {
             router.routeToGameResult()
         }
     }
     
+    private func startGame(with question: Router.Question, player: Player) {
+        router.routeToPlayerTurn(player: player, { [weak self] in
+            self?.routeToQuestion(question, player: player)
+        })
+    }
+    
     private func routeToQuestion(_ question: Router.Question, player: Player) {
-        router.routeToQuestionScreen(question, { _ in })
+        router.routeToQuestionScreen(question, {
+            self.routeToQuestionResult(question: question, player: player, answer: $0)
+        })
+    }
+    
+    private func routeToQuestionResult(question: Router.Question, player: Player, answer: String) {
+        self.router.routeToQuestionResult {
+            self.nextPlayerOrQuestion(from: question, player: player)
+        }
+    }
+    
+    private func nextPlayerOrQuestion(from question: Router.Question, player: Player) {
+        if let playerIndex = players.firstIndex(of: player), (playerIndex + 1) < players.count {
+            // If there's more players to answer the same question
+            let nextPlayer = players[playerIndex + 1]
+            startGame(with: question, player: nextPlayer)
+        } else if let questionIndex = questions.firstIndex(of: question), (questionIndex + 1) < questions.count, let firstPlayer = players.first {
+            // If is the last Player and there's more questions
+            let nextQuestion = questions[questionIndex + 1]
+            startGame(with: nextQuestion, player: firstPlayer)
+        } else {
+            router.routeToGameResult()
+        }
     }
 }

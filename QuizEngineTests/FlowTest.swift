@@ -57,6 +57,33 @@ final class FlowTest: XCTestCase {
         XCTAssertEqual(routerSpy.routedQuestionsRequests.first?.question, "Q1")
     }
     
+    func test_startAndFirstPlayerInitiatesGameAndAnswersFirstQuestion_withOneQuestionAndOnePlayer_routesToQuestionResult() {
+        let players: [Player] = [.init(name: "a player")]
+        let (sut, routerSpy) = makeSUT(questions: ["Q1"], players: players)
+        
+        sut.start()
+        routerSpy.routedToPlayerTurnRequests[0].onStart()
+        routerSpy.routedQuestionsRequests[0].answer("A answer")
+        
+        XCTAssertEqual(routerSpy.routedQuestionsRequests.count, 1)
+        XCTAssertEqual(routerSpy.routedQuestionsRequests.first?.question, "Q1")
+        XCTAssertEqual(routerSpy.questionResultRequests.count, 1)
+    }
+    
+    func test_startAndFirstPlayerStartsAndAnswersQuestionAndCompletesQuestionResult_withOneQuestionAndOnePlayer_routesToGameResult() {
+        let players: [Player] = [.init(name: "a player")]
+        let (sut, routerSpy) = makeSUT(questions: ["Q1"], players: players)
+        
+        sut.start()
+        routerSpy.routedToPlayerTurnRequests[0].onStart()
+        routerSpy.routedQuestionsRequests[0].answer("A answer")
+        routerSpy.questionResultRequests[0]()
+        
+        XCTAssertEqual(routerSpy.routedToGameResultCallCount, 1)
+    }
+    
+    // MARK: Helpers
+    
     private func makeSUT(
         questions: [String] = [],
         players: [Player] = []
@@ -69,7 +96,7 @@ final class FlowTest: XCTestCase {
     
     final class RouterSpy: Router {
         var routedToGameResultCallCount = 0
-        var routedQuestionsRequests: [(question: Question, completion: Answer)] = []
+        var routedQuestionsRequests: [(question: Question, answer: Answer)] = []
         var routedToPlayerTurnRequests: [(player: Player, onStart: () -> Void)] = []
         
         func routeToPlayerTurn(player: Player, _ onStart: @escaping () -> Void) {
@@ -80,7 +107,11 @@ final class FlowTest: XCTestCase {
             routedQuestionsRequests.append((question, answer))
         }
         
-        func routeToQuestionResult() {}
+        private(set) var questionResultRequests: [() -> Void] = []
+        
+        func routeToQuestionResult(completion: @escaping () -> Void) {
+            questionResultRequests.append(completion)
+        }
         
         func routeToGameResult() {
             routedToGameResultCallCount += 1
