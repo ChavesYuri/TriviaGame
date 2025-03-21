@@ -17,13 +17,13 @@ public final class Flow <Question: Hashable, Answer, R: Router> where R.Question
     
     public func start() {
         if let firstQuestion = questions.first, let firstPlayer = players.first {
-            startGame(with: firstQuestion, player: firstPlayer)
+            routeToPlayerTurn(with: firstQuestion, player: firstPlayer)
         } else {
             router.routeToGameResult()
         }
     }
     
-    private func startGame(with question: Question, player: Player<Question, Answer>) {
+    private func routeToPlayerTurn(with question: Question, player: Player<Question, Answer>) {
         router.routeToPlayerTurn(player: player, { [weak self] in
             self?.routeToQuestion(question, player: player)
         })
@@ -47,9 +47,9 @@ public final class Flow <Question: Hashable, Answer, R: Router> where R.Question
     
     private func nextPlayerOrRoundResult(from question: Question, player: Player<Question, Answer>) {
         if let playerIndex = players.firstIndex(of: player), (playerIndex + 1) < players.count {
-            // If there's more players to answer the same question
+            /// If there's more players to answer the same question
             let nextPlayer = players[playerIndex + 1]
-            startGame(with: question, player: nextPlayer)
+            routeToPlayerTurn(with: question, player: nextPlayer)
         } else {
             score(for: question)
             router.routeToRoundResult {
@@ -62,9 +62,9 @@ public final class Flow <Question: Hashable, Answer, R: Router> where R.Question
         if let _ = winner() {
             router.routeToGameResult()
         } else if let questionIndex = questions.firstIndex(of: question), (questionIndex + 1) < questions.count, let firstPlayer = players.first {
-            // If is the last Player and there's more questions
+            /// If is the last Player and there's more questions
             let nextQuestion = questions[questionIndex + 1]
-            routeToQuestion(nextQuestion, player: firstPlayer)
+            routeToPlayerTurn(with: nextQuestion, player: firstPlayer)
         } else {
             router.routeToGameResult()
         }

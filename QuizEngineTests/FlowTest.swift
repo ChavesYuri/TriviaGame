@@ -128,6 +128,25 @@ final class FlowTest: XCTestCase {
         XCTAssertEqual(routerSpy.gameResultCallCount, 1)
     }
     
+    func test_start_firstAndSecondPlayerFinishesQuestions_withTwoQuestionsAndTwoPlayers_secondPlayerScores1PointOnFirstRound_routesToFirstPlayerTurn() {
+        let players: [Player<String, String>] = [.init(name: "a player"), .init(name: "Another Player")]
+        let (sut, routerSpy) = makeSUT(questions: ["Q1", "Q2"], players: players) { players, _ in
+            players[1].score = 1
+        }
+        
+        sut.start()
+        routerSpy.playerTurnRequests[0].onStart()
+        routerSpy.questionsRequests[0].answer("A answer")
+        routerSpy.questionResultRequests[0]()
+        routerSpy.playerTurnRequests[1].onStart()
+        routerSpy.questionsRequests[1].answer("A answer")
+        routerSpy.questionResultRequests[1]()
+        routerSpy.roundResultRequests[0]()
+        
+        XCTAssertEqual(routerSpy.playerTurnRequests.count, 3)
+        XCTAssertEqual(routerSpy.playerTurnRequests[2].player, players[0])
+    }
+    
     // MARK: Helpers
     
     private func makeSUT(
