@@ -75,12 +75,6 @@ public final class Flow <Question: Hashable, Answer, R: Router> where R.Question
     }
     
     private func winner() -> Player<Question, Answer>? {
-        for player in players {
-            if player.score == winnerScore {
-                return player
-            }
-        }
-        
-        return nil
+        players.first(where: { $0.score == winnerScore })
     }
 }
