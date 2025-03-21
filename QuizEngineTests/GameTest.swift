@@ -5,6 +5,7 @@ import QuizEngine
 final class GameTest: XCTestCase {
     let router = RouterSpy()
     var game: Game<String, String, RouterSpy>!
+    
     func test_startGame_firstPlayerAnswersCorrectlyAndSecondPlayerAnswerIncorrectly_firstPlayerScores1() {
         let players: [Player<String, String>] = [.init(name: "Player 1"), .init(name: "Player 2")]
         game =  startGame(players: players, questions: ["Q1"], router: router, correctAnswers: ["Q1": "A1"])

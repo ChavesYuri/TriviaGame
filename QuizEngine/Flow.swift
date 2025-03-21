@@ -30,8 +30,8 @@ public final class Flow <Question: Hashable, Answer, R: Router> where R.Question
     }
     
     private func routeToQuestion(_ question: Question, player: Player<Question, Answer>) {
-        router.routeToQuestionScreen(question, {
-            self.routeToQuestionResult(question: question, player: player, answer: $0, time: $1)
+        router.routeToQuestionScreen(question, { [weak self] in
+            self?.routeToQuestionResult(question: question, player: player, answer: $0, time: $1)
         })
     }
     
@@ -40,8 +40,8 @@ public final class Flow <Question: Hashable, Answer, R: Router> where R.Question
             players[currentPlayerIndex].answers[question] = (answer, time)
         }
         
-        self.router.routeToQuestionResult {
-            self.nextPlayerOrRoundResult(from: question, player: player)
+        router.routeToQuestionResult { [weak self] in
+            self?.nextPlayerOrRoundResult(from: question, player: player)
         }
     }
     
@@ -52,8 +52,8 @@ public final class Flow <Question: Hashable, Answer, R: Router> where R.Question
             routeToPlayerTurn(with: question, player: nextPlayer)
         } else {
             score(for: question)
-            router.routeToRoundResult(players: players) {
-                self.nextQuestionOrGameResult(question: question, player: player)
+            router.routeToRoundResult(players: players) { [weak self] in
+                self?.nextQuestionOrGameResult(question: question, player: player)
             }
         }
     }

@@ -20,12 +20,7 @@ public func startGame<Question: Hashable, Answer: Equatable, R: Router>(
 }
 
 private func scoring<Question: Hashable, Answer: Equatable>(players: [Player<Question, Answer>], question: Question, correctAnswers: [Question: Answer]) {
-    var playersWithRightAnswers: [Player<Question, Answer>] = []
-    for player in players {
-        if player.answers[question]?.answer == correctAnswers[question] {
-            playersWithRightAnswers.append(player)
-        }
-    }
+    var playersWithRightAnswers = players.filter { $0.answers[question]?.answer == correctAnswers[question] }
     
     guard playersWithRightAnswers.count > 1 else {
         if let scoringPlayer = playersWithRightAnswers.first, let scoringIndex = players.firstIndex(of: scoringPlayer) {
