@@ -64,12 +64,13 @@ final class FlowTest: XCTestCase {
         sut.start()
         routerSpy.playerTurnRequests[0].onStart()
         let answer = "A answer"
-        routerSpy.questionsRequests[0].answer(answer)
+        let timeTaken: TimeInterval = 1.0
+        routerSpy.questionsRequests[0].answer(answer, timeTaken)
         
         XCTAssertEqual(routerSpy.questionsRequests.count, 1)
         XCTAssertEqual(routerSpy.questionsRequests.first?.question, "Q1")
         XCTAssertEqual(routerSpy.questionResultRequests.count, 1)
-        XCTAssertEqual(players[0].answers["Q1"], answer)
+        XCTAssertEqual(players[0].answers["Q1"]?.answer, answer)
     }
     
     func test_startAndFirstPlayerStartsAndAnswersQuestionAndCompletesQuestionResult_withOneQuestionAndOnePlayer_routesToRoundResult() {
@@ -78,7 +79,8 @@ final class FlowTest: XCTestCase {
         
         sut.start()
         routerSpy.playerTurnRequests[0].onStart()
-        routerSpy.questionsRequests[0].answer("A answer")
+        let timeTaken: TimeInterval = 1.0
+        routerSpy.questionsRequests[0].answer("A answer", timeTaken)
         routerSpy.questionResultRequests[0]()
         
         XCTAssertEqual(routerSpy.roundResultRequests.count, 1)
@@ -90,7 +92,8 @@ final class FlowTest: XCTestCase {
         
         sut.start()
         routerSpy.playerTurnRequests[0].onStart()
-        routerSpy.questionsRequests[0].answer("A answer")
+        let timeTaken: TimeInterval = 1.0
+        routerSpy.questionsRequests[0].answer("A answer", timeTaken)
         routerSpy.questionResultRequests[0]()
         
         XCTAssertEqual(routerSpy.roundResultRequests.count, 1)
@@ -102,7 +105,8 @@ final class FlowTest: XCTestCase {
         
         sut.start()
         routerSpy.playerTurnRequests[0].onStart()
-        routerSpy.questionsRequests[0].answer("A answer")
+        let timeTaken: TimeInterval = 1.0
+        routerSpy.questionsRequests[0].answer("A answer", timeTaken)
         routerSpy.questionResultRequests[0]()
         
         XCTAssertEqual(routerSpy.playerTurnRequests.count, 2)
@@ -118,12 +122,14 @@ final class FlowTest: XCTestCase {
         
         sut.start()
         routerSpy.playerTurnRequests[0].onStart()
-        routerSpy.questionsRequests[0].answer("A answer")
+        let player1TimeTaken: TimeInterval = 1.0
+        routerSpy.questionsRequests[0].answer("A answer", player1TimeTaken)
         routerSpy.questionResultRequests[0]()
         routerSpy.playerTurnRequests[1].onStart()
-        routerSpy.questionsRequests[1].answer("A answer")
+        let player2TimeTaken: TimeInterval = 1.0
+        routerSpy.questionsRequests[1].answer("A answer", player2TimeTaken)
         routerSpy.questionResultRequests[1]()
-        routerSpy.roundResultRequests[0]()
+        routerSpy.roundResultRequests[0].completion()
         
         XCTAssertEqual(routerSpy.gameResultCallCount, 1)
     }
@@ -136,12 +142,14 @@ final class FlowTest: XCTestCase {
         
         sut.start()
         routerSpy.playerTurnRequests[0].onStart()
-        routerSpy.questionsRequests[0].answer("A answer")
+        let player1TimeTaken: TimeInterval = 1.0
+        routerSpy.questionsRequests[0].answer("A answer", player1TimeTaken)
         routerSpy.questionResultRequests[0]()
         routerSpy.playerTurnRequests[1].onStart()
-        routerSpy.questionsRequests[1].answer("A answer")
+        let player2TimeTaken: TimeInterval = 1.0
+        routerSpy.questionsRequests[1].answer("A answer", player2TimeTaken)
         routerSpy.questionResultRequests[1]()
-        routerSpy.roundResultRequests[0]()
+        routerSpy.roundResultRequests[0].completion()
         
         XCTAssertEqual(routerSpy.playerTurnRequests.count, 3)
         XCTAssertEqual(routerSpy.playerTurnRequests[2].player, players[0])
@@ -159,37 +167,4 @@ final class FlowTest: XCTestCase {
         
         return (sut, routerSpy)
     }
-    
-    final class RouterSpy: Router {
-        private(set) var playerTurnRequests: [(player: Player<String, String>, onStart: () -> Void)] = []
-        
-        func routeToPlayerTurn(player: Player<String, String>, _ onStart: @escaping () -> Void) {
-            playerTurnRequests.append((player, onStart))
-        }
-        
-        private(set) var questionsRequests: [(question: String, answer: (String) -> Void)] = []
-        
-        func routeToQuestionScreen(_ question: String, _ answer: @escaping (String) -> Void) {
-            questionsRequests.append((question, answer))
-        }
-        
-        private(set) var questionResultRequests: [() -> Void] = []
-        
-        func routeToQuestionResult(completion: @escaping () -> Void) {
-            questionResultRequests.append(completion)
-        }
-        
-        private(set) var roundResultRequests: [() -> Void] = []
-        
-        func routeToRoundResult(completion: @escaping () -> Void) {
-            roundResultRequests.append(completion)
-        }
-        
-        private(set) var gameResultCallCount = 0
-        
-        func routeToGameResult() {
-            gameResultCallCount += 1
-        }
-    }
-    
 }

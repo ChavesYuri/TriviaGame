@@ -1,0 +1,34 @@
+import Foundation
+import QuizEngine
+
+final class RouterSpy: Router {
+    private(set) var playerTurnRequests: [(player: Player<String, String>, onStart: () -> Void)] = []
+    
+    func routeToPlayerTurn(player: Player<String, String>, _ onStart: @escaping () -> Void) {
+        playerTurnRequests.append((player, onStart))
+    }
+    
+    private(set) var questionsRequests: [(question: String, answer: (String, TimeInterval) -> Void)] = []
+    
+    func routeToQuestionScreen(_ question: String, _ answer: @escaping (String, TimeInterval) -> Void) {
+        questionsRequests.append((question, answer))
+    }
+    
+    private(set) var questionResultRequests: [() -> Void] = []
+    
+    func routeToQuestionResult(completion: @escaping () -> Void) {
+        questionResultRequests.append(completion)
+    }
+    
+    private(set) var roundResultRequests: [(players: [Player<String, String>], completion: () -> Void)] = []
+    
+    func routeToRoundResult(players: [Player<String, String>], completion: @escaping () -> Void) {
+        roundResultRequests.append((players, completion))
+    }
+    
+    private(set) var gameResultCallCount = 0
+    
+    func routeToGameResult() {
+        gameResultCallCount += 1
+    }
+}

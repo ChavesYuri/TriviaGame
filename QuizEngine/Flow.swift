@@ -31,13 +31,13 @@ public final class Flow <Question: Hashable, Answer, R: Router> where R.Question
     
     private func routeToQuestion(_ question: Question, player: Player<Question, Answer>) {
         router.routeToQuestionScreen(question, {
-            self.routeToQuestionResult(question: question, player: player, answer: $0)
+            self.routeToQuestionResult(question: question, player: player, answer: $0, time: $1)
         })
     }
     
-    private func routeToQuestionResult(question: Question, player: Player<Question, Answer>, answer: Answer) {
+    private func routeToQuestionResult(question: Question, player: Player<Question, Answer>, answer: Answer, time: TimeInterval) {
         if let currentPlayerIndex = players.firstIndex(of: player) {
-            players[currentPlayerIndex].answers[question] = answer
+            players[currentPlayerIndex].answers[question] = (answer, time)
         }
         
         self.router.routeToQuestionResult {
@@ -52,7 +52,7 @@ public final class Flow <Question: Hashable, Answer, R: Router> where R.Question
             routeToPlayerTurn(with: question, player: nextPlayer)
         } else {
             score(for: question)
-            router.routeToRoundResult {
+            router.routeToRoundResult(players: players) {
                 self.nextQuestionOrGameResult(question: question, player: player)
             }
         }
