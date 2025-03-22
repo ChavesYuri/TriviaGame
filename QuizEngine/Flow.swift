@@ -11,7 +11,8 @@ public final class Flow <Question: Hashable, Answer, R: Router> where R.Question
     
     public init(
         players: [Player<Question, Answer>],
-        router: R, questions: [Question],
+        router: R,
+        questions: [Question],
         scoring: @escaping ([Player<Question, Answer>], Question) -> Void,
         isAnswerCorrect: @escaping (Question, Answer) -> Bool
     ) {
@@ -31,7 +32,8 @@ public final class Flow <Question: Hashable, Answer, R: Router> where R.Question
     }
     
     private func routeToPlayerTurn(with question: Question, player: Player<Question, Answer>) {
-        router.routeToPlayerTurn(player: player, { [weak self] in
+        let questionNumber = (questions.firstIndex(of: question) ?? 0) + 1
+        router.routeToPlayerTurn(player: player, questionNumber: questionNumber, { [weak self] in
             self?.routeToQuestion(question, player: player)
         })
     }

@@ -2,10 +2,10 @@ import Foundation
 import QuizEngine
 
 final class RouterSpy: Router {
-    private(set) var playerTurnRequests: [(player: Player<String, String>, onStart: () -> Void)] = []
+    private(set) var playerTurnRequests: [(player: Player<String, String>, questionNumber: Int, onStart: () -> Void)] = []
     
-    func routeToPlayerTurn(player: Player<String, String>, _ onStart: @escaping () -> Void) {
-        playerTurnRequests.append((player, onStart))
+    func routeToPlayerTurn(player: Player<String, String>, questionNumber: Int, _ onStart: @escaping () -> Void) {
+        playerTurnRequests.append((player, questionNumber, onStart))
     }
     
     private(set) var questionsRequests: [(question: String, answer: (String, TimeInterval) -> Void)] = []
