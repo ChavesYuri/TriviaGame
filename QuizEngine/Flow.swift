@@ -1,18 +1,39 @@
 import Foundation
 
+public struct QuestionResult<Question: Hashable, Answer> {
+    public let answer: Answer
+    public let question: Question
+    public let time: TimeInterval
+    public let isCorrect: Bool
+    
+    public init(answer: Answer, question: Question, time: TimeInterval, isCorrect: Bool) {
+        self.answer = answer
+        self.question = question
+        self.time = time
+        self.isCorrect = isCorrect
+    }
+}
+
 public final class Flow <Question: Hashable, Answer, R: Router> where R.Question == Question, R.Answer == Answer {
     private let winnerScore: Int = 3
     private var players: [Player<Question, Answer>]
     private let router: R
     private let questions: [Question]
     private let scoring: ([Player<Question, Answer>], Question) -> Void
+    private let isAnswerCorrect: (Question, Answer) -> Bool
     
     
-    public init(players: [Player<Question, Answer>], router: R, questions: [Question], scoring: @escaping ([Player<Question, Answer>], Question) -> Void) {
+    public init(
+        players: [Player<Question, Answer>],
+        router: R, questions: [Question],
+        scoring: @escaping ([Player<Question, Answer>], Question) -> Void,
+        isAnswerCorrect: @escaping (Question, Answer) -> Bool
+    ) {
         self.players = players
         self.router = router
         self.questions = questions
         self.scoring = scoring
+        self.isAnswerCorrect = isAnswerCorrect
     }
     
     public func start() {
@@ -40,7 +61,8 @@ public final class Flow <Question: Hashable, Answer, R: Router> where R.Question
             players[currentPlayerIndex].answers[question] = (answer, time)
         }
         
-        router.routeToQuestionResult { [weak self] in
+        let questionResult = QuestionResult(answer: answer, question: question, time: time, isCorrect: isAnswerCorrect(question, answer))
+        router.routeToQuestionResult(questionResult: questionResult) { [weak self] in
             self?.nextPlayerOrRoundResult(from: question, player: player)
         }
     }

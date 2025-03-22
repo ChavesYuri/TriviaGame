@@ -14,26 +14,41 @@ public func startGame<Question: Hashable, Answer: Equatable, R: Router>(
     router: R,
     correctAnswers: [Question: Answer]
 ) -> Game<Question, Answer, R> where R.Question == Question, R.Answer == Answer {
-    let flow = Flow(players: players, router: router, questions: questions) { scoring(players: $0, question: $1, correctAnswers: correctAnswers) }
+    let flow = Flow(
+        players: players,
+        router: router,
+        questions: questions,
+        scoring: { GamePolicy.scoring(players: $0, question: $1, correctAnswers: correctAnswers) },
+        isAnswerCorrect: { GamePolicy.validateQuestion( question: $0, answer: $1, correctAnswers: correctAnswers) })
     flow.start()
     return Game(flow: flow)
 }
 
-private func scoring<Question: Hashable, Answer: Equatable>(players: [Player<Question, Answer>], question: Question, correctAnswers: [Question: Answer]) {
-    var playersWithRightAnswers = players.filter { $0.answers[question]?.answer == correctAnswers[question] }
+internal final class GamePolicy {
+    internal static func validateQuestion<Question: Hashable, Answer: Equatable>(
+        question: Question,
+        answer: Answer,
+        correctAnswers: [Question: Answer]
+    ) -> Bool {
+        answer == correctAnswers[question]
+    }
     
-    guard playersWithRightAnswers.count > 1 else {
-        if let scoringPlayer = playersWithRightAnswers.first, let scoringIndex = players.firstIndex(of: scoringPlayer) {
-            players[scoringIndex].score += 1
+    internal static func scoring<Question: Hashable, Answer: Equatable>(players: [Player<Question, Answer>], question: Question, correctAnswers: [Question: Answer]) {
+        var playersWithRightAnswers = players.filter { $0.answers[question]?.answer == correctAnswers[question] }
+        
+        guard playersWithRightAnswers.count > 1 else {
+            if let scoringPlayer = playersWithRightAnswers.first, let scoringIndex = players.firstIndex(of: scoringPlayer) {
+                players[scoringIndex].score += 1
+            }
+            return
         }
-        return
-    }
-    
-    playersWithRightAnswers.sort {
-        $0.answers[question]?.time ?? 0 < $1.answers[question]?.time ?? 0
-    }
-    
-    if let fastestPlayer = playersWithRightAnswers.first, let fastestIndex = players.firstIndex(of: fastestPlayer) {
-        players[fastestIndex].score += 1
+        
+        playersWithRightAnswers.sort {
+            $0.answers[question]?.time ?? 0 < $1.answers[question]?.time ?? 0
+        }
+        
+        if let fastestPlayer = playersWithRightAnswers.first, let fastestIndex = players.firstIndex(of: fastestPlayer) {
+            players[fastestIndex].score += 1
+        }
     }
 }

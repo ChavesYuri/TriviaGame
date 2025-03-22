@@ -81,7 +81,7 @@ final class FlowTest: XCTestCase {
         routerSpy.playerTurnRequests[0].onStart()
         let timeTaken: TimeInterval = 1.0
         routerSpy.questionsRequests[0].answer("A answer", timeTaken)
-        routerSpy.questionResultRequests[0]()
+        routerSpy.questionResultRequests[0].completion()
         
         XCTAssertEqual(routerSpy.roundResultRequests.count, 1)
     }
@@ -94,7 +94,7 @@ final class FlowTest: XCTestCase {
         routerSpy.playerTurnRequests[0].onStart()
         let timeTaken: TimeInterval = 1.0
         routerSpy.questionsRequests[0].answer("A answer", timeTaken)
-        routerSpy.questionResultRequests[0]()
+        routerSpy.questionResultRequests[0].completion()
         
         XCTAssertEqual(routerSpy.roundResultRequests.count, 1)
     }
@@ -107,7 +107,7 @@ final class FlowTest: XCTestCase {
         routerSpy.playerTurnRequests[0].onStart()
         let timeTaken: TimeInterval = 1.0
         routerSpy.questionsRequests[0].answer("A answer", timeTaken)
-        routerSpy.questionResultRequests[0]()
+        routerSpy.questionResultRequests[0].completion()
         
         XCTAssertEqual(routerSpy.playerTurnRequests.count, 2)
         XCTAssertEqual(routerSpy.playerTurnRequests[0].player, players[0])
@@ -124,11 +124,11 @@ final class FlowTest: XCTestCase {
         routerSpy.playerTurnRequests[0].onStart()
         let player1TimeTaken: TimeInterval = 1.0
         routerSpy.questionsRequests[0].answer("A answer", player1TimeTaken)
-        routerSpy.questionResultRequests[0]()
+        routerSpy.questionResultRequests[0].completion()
         routerSpy.playerTurnRequests[1].onStart()
         let player2TimeTaken: TimeInterval = 1.0
         routerSpy.questionsRequests[1].answer("A answer", player2TimeTaken)
-        routerSpy.questionResultRequests[1]()
+        routerSpy.questionResultRequests[1].completion()
         routerSpy.roundResultRequests[0].completion()
         
         XCTAssertEqual(routerSpy.gameResultCallCount, 1)
@@ -144,11 +144,11 @@ final class FlowTest: XCTestCase {
         routerSpy.playerTurnRequests[0].onStart()
         let player1TimeTaken: TimeInterval = 1.0
         routerSpy.questionsRequests[0].answer("A answer", player1TimeTaken)
-        routerSpy.questionResultRequests[0]()
+        routerSpy.questionResultRequests[0].completion()
         routerSpy.playerTurnRequests[1].onStart()
         let player2TimeTaken: TimeInterval = 1.0
         routerSpy.questionsRequests[1].answer("A answer", player2TimeTaken)
-        routerSpy.questionResultRequests[1]()
+        routerSpy.questionResultRequests[1].completion()
         routerSpy.roundResultRequests[0].completion()
         
         XCTAssertEqual(routerSpy.playerTurnRequests.count, 3)
@@ -165,7 +165,7 @@ final class FlowTest: XCTestCase {
         line: UInt = #line
     ) -> (Flow<String, String, RouterSpy>, RouterSpy) {
         let routerSpy = RouterSpy()
-        let sut = Flow(players: players, router: routerSpy, questions: questions, scoring: scoring)
+        let sut = Flow(players: players, router: routerSpy, questions: questions, scoring: scoring, isAnswerCorrect: { _, _ in false })
         
         trackForMemoryLeaks(routerSpy, file: file, line: line)
         trackForMemoryLeaks(sut, file: file, line: line)

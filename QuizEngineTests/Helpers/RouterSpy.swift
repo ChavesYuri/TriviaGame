@@ -14,10 +14,10 @@ final class RouterSpy: Router {
         questionsRequests.append((question, answer))
     }
     
-    private(set) var questionResultRequests: [() -> Void] = []
+    private(set) var questionResultRequests: [(result: QuestionResult<Question, Answer>, completion: () -> Void)] = []
     
-    func routeToQuestionResult(completion: @escaping () -> Void) {
-        questionResultRequests.append(completion)
+    func routeToQuestionResult(questionResult: QuestionResult<Question, Answer>, completion: @escaping () -> Void) {
+        questionResultRequests.append((questionResult, completion))
     }
     
     private(set) var roundResultRequests: [(players: [Player<String, String>], completion: () -> Void)] = []
