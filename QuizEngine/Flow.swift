@@ -1,19 +1,5 @@
 import Foundation
 
-public struct QuestionResult<Question: Hashable, Answer> {
-    public let answer: Answer
-    public let question: Question
-    public let time: TimeInterval
-    public let isCorrect: Bool
-    
-    public init(answer: Answer, question: Question, time: TimeInterval, isCorrect: Bool) {
-        self.answer = answer
-        self.question = question
-        self.time = time
-        self.isCorrect = isCorrect
-    }
-}
-
 public final class Flow <Question: Hashable, Answer, R: Router> where R.Question == Question, R.Answer == Answer {
     private let winnerScore: Int = 3
     private var players: [Player<Question, Answer>]
